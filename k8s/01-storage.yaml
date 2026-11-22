@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: portal-pv-239
+spec:
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/iam-239-portal
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: portal-pvc-239
+  namespace: iam-239
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: manual
+  volumeName: portal-pv-239
+  resources:
+    requests:
+      storage: 50Mi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: research-pv-239
+spec:
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/iam-239-research
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: research-pvc-239
+  namespace: iam-239
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: manual
+  volumeName: research-pv-239
+  resources:
+    requests:
+      storage: 50Mi

@@ -1,0 +1,16 @@
+# ==========================================================
+# ตัวอย่างการตั้งค่า /etc/hosts บน Linux (หรือ C:\Windows\System32\drivers\etc\hosts บน Windows)
+# ชี้โดเมน www.iam-239.com และ admin.iam-239.com ไปยัง Load Balancer
+# ==========================================================
+
+127.0.0.1 localhost
+
+# กรณีใช้งานบนเครื่อง Local Kind + Docker Nginx LB (Windows / WSL)
+127.0.0.1 www.iam-239.com admin.iam-239.com
+
+# กรณีใช้งานบนคลัสเตอร์ VMware / Linux 3+1 Nodes (k8s-lb = 192.168.1.20)
+# 192.168.1.10 k8s-control
+# 192.168.1.11 k8s-worker1
+# 192.168.1.12 k8s-worker2
+# 192.168.1.20 k8s-lb
+# 192.168.1.20 www.iam-239.com admin.iam-239.com

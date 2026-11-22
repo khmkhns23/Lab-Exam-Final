@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: iam-239-ingress
+  namespace: iam-239
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: www.iam-239.com
+      http:
+        paths:
+          - path: /research
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-research
+                port:
+                  number: 80
+          - path: /api-239
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-api-239
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-portal-239
+                port:
+                  number: 80
+    - host: admin.iam-239.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-admin-239
+                port:
+                  number: 80
