@@ -12,27 +12,7 @@
 
 ระบบรับทราฟฟิกจากเบราว์เซอร์ผ่านไฟล์ `hosts` เข้าสู่ **External Nginx Load Balancer** (`k8s-lb-iam239` พอร์ต `80`) แล้วกระจายไปยัง **NGINX Ingress Controller** (`NodePort: 31080`) ภายในคลัสเตอร์ Kubernetes 3 Nodes เพื่อจัดเส้นทางไปยัง Microservices ทั้ง 4 ตัวตาม Host และ URL Path พร้อมแยกจัดเก็บข้อมูลถาวรด้วย **PersistentVolumeClaim (PVC)** แบบ `ReadWriteMany` จำนวน 2 ชุด
 
-```mermaid
-flowchart TD
-    Client["Client Browser (hosts -> 127.0.0.1 หรือ 192.168.1.20)"] --> LB["External Nginx LB: k8s-lb-iam239 (:80)"]
-    LB --> IngCtrl["NGINX Ingress Controller v1.15.1 (NodePort :31080)"]
-    IngCtrl --> Ing["Ingress: iam-239-ingress (Namespace: iam-239)"]
-
-    Ing -->|"www.iam-239.com/"| SvcPortal["svc-portal-239 (:80)"]
-    Ing -->|"www.iam-239.com/research"| SvcResearch["svc-research (:80)"]
-    Ing -->|"www.iam-239.com/api-239/..."| SvcApi["svc-api-239 (:80)"]
-    Ing -->|"admin.iam-239.com/"| SvcAdmin["svc-admin-239 (:80)"]
-
-    SvcPortal --> DepPortal["Deployment: portal-239 (1 Replica, k8s-lab-worker)"]
-    SvcResearch --> DepResearch["Deployment: app-research (1 Replica, k8s-lab-worker)"]
-    SvcApi --> DepApi["Deployment: api-239 (2 Replicas, worker & worker2)"]
-    SvcAdmin --> DepAdmin["Deployment: admin-239 (1 Replica, k8s-lab-worker)"]
-
-    DepPortal --> PvcPortal["PVC: portal-pvc-239 (RWX)"]
-    DepResearch --> PvcResearch["PVC: research-pvc-239 (RWX)"]
-    DepAdmin -->|"แก้ไขข้อมูลและอัปโหลดรูป"| PvcPortal
-    DepAdmin -->|"แก้ไขบทสรุปงานวิจัย"| PvcResearch
-```
+![สถาปัตยกรรมระบบ Kubernetes Multi-Service & Ingress](./assets/architecture.png)
 
 ### ตารางสรุปบริการทั้ง 4 Deployments
 
@@ -66,19 +46,15 @@ Kubernetes-Multi-Service-Ingress-Project-/
 │   ├── etc-hosts-linux.txt      # ตัวอย่างการตั้งค่า /etc/hosts (Linux) และ hosts (Windows)
 │   ├── k8s-lb-kind.conf         # คอนฟิก Nginx External LB สำหรับ Local Kind 3-Node
 │   └── k8s-lb-ingress.conf      # คอนฟิก Nginx External LB สำหรับ VMware / Linux (192.168.1.20)
-├── scripts/
-│   ├── deploy.bat               # Batch Script สำหรับ Deploy จาก Windows ลง kind-k8s-lab อัตโนมัติ
-│   ├── deploy.sh                # Shell Script สำหรับ Deploy บน Linux (Control Plane)
-│   ├── verify-local.ps1         # PowerShell Script ตรวจสอบสถานะ K8s, LB และทดสอบ HTTP บน Windows
-│   ├── verify.sh                # Shell Script ตรวจสอบสถานะ K8s และทดสอบ HTTP บน Linux
-│   ├── win-setup-hosts.bat      # สคริปต์เพิ่มโดเมนลงไฟล์ hosts ของ Windows อัตโนมัติ
-│   └── node-prereq.sh           # สคริปต์เตรียมเครื่อง Ubuntu 24.04 (containerd + kubeadm)
-└── docs/
-    ├── REPORT_68130239.pdf      # ไฟล์รายงาน PDF ฉบับสมบูรณ์ (สิ่งที่ส่งข้อ 1)
-    ├── REPORT_68130239.html     # ต้นฉบับ HTML สำหรับพิมพ์/แก้ไขรายงาน PDF
-    ├── REPORT_GUIDE.md          # แนวทางและหัวข้อรายงาน PDF (สิ่งที่ส่งข้อ 1)
-    ├── TEST_EVIDENCE_GUIDE.md   # แนวทางทดสอบและแคปภาพหน้าจอทุก Service (สิ่งที่ส่งข้อ 3)
-    └── VMWARE_WINDOWS_SETUP.md  # คู่มือตั้งค่า VMware บน Windows และสร้าง Cluster ตั้งแต่ต้น
+├── assets/
+│   └── architecture.png         # ภาพแผนภาพสถาปัตยกรรมระบบ 3-Node Kubernetes Cluster
+└── scripts/
+    ├── deploy.bat               # Batch Script สำหรับ Deploy จาก Windows ลง kind-k8s-lab อัตโนมัติ
+    ├── deploy.sh                # Shell Script สำหรับ Deploy บน Linux (Control Plane)
+    ├── verify-local.ps1         # PowerShell Script ตรวจสอบสถานะ K8s, LB และทดสอบ HTTP บน Windows
+    ├── verify.sh                # Shell Script ตรวจสอบสถานะ K8s และทดสอบ HTTP บน Linux
+    ├── win-setup-hosts.bat      # สคริปต์เพิ่มโดเมนลงไฟล์ hosts ของ Windows อัตโนมัติ
+    └── node-prereq.sh           # สคริปต์เตรียมเครื่อง Ubuntu 24.04 (containerd + kubeadm)
 ```
 
 ### ลิงก์ไฟล์สำคัญใน Repository
@@ -92,7 +68,7 @@ Kubernetes-Multi-Service-Ingress-Project-/
 
 ### ข้อกำหนดเบื้องต้น (Prerequisites)
 - **กรณีรันบน Windows (Local Kind):** มี Docker Desktop, `kubectl` และคลัสเตอร์ Kind 3 Nodes ชื่อ `kind-k8s-lab` (`k8s-lab-control-plane`, `k8s-lab-worker`, `k8s-lab-worker2`) พร้อมใช้งาน และพอร์ต `80` บนเครื่องว่างอยู่
-- **กรณีรันบน Linux / VMware 3+1 Nodes:** เตรียม 4 เครื่อง (`k8s-control`, `k8s-worker1`, `k8s-worker2`, `k8s-lb`) ตามคู่มือ [docs/VMWARE_WINDOWS_SETUP.md](./docs/VMWARE_WINDOWS_SETUP.md)
+- **กรณีรันบน Linux / VMware 3+1 Nodes:** เตรียม 4 เครื่อง (`k8s-control`, `k8s-worker1`, `k8s-worker2`, `k8s-lb`) ด้วย [scripts/node-prereq.sh](./scripts/node-prereq.sh), [configs/k8s-lb-ingress.conf](./configs/k8s-lb-ingress.conf) และ [configs/etc-hosts-linux.txt](./configs/etc-hosts-linux.txt)
 
 ---
 
